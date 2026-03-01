@@ -440,7 +440,7 @@
         <h1 class="auth-title">Welcome Back</h1>
         <p class="auth-subtitle">Sign in to access your dashboard and manage your fleet or bookings.</p>
 
-        <form method="POST">
+        <form method="POST" action="{% url 'accounts:login' %}">
             {% csrf_token %}
             
             {% if messages %}

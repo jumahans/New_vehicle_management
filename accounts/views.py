@@ -5,48 +5,50 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import Profile
 
-
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            
             Profile.objects.create(
                 user=user,
                 role='customer',
-                phone_number=form.cleaned_data['phone_number'],
-                next_of_kin_name=form.cleaned_data['next_of_kin_name'],
-                next_of_kin_phone=form.cleaned_data['next_of_kin_phone']
+                phone_number=form.cleaned_data.get('phone_number'),
+                next_of_kin_name=form.cleaned_data.get('next_of_kin_name'),
+                next_of_kin_phone=form.cleaned_data.get('next_of_kin_phone')
             )
-            messages.success(request, f'Account created for {user.username}! You can login')
-            return redirect('login')
+            messages.success(request, f'Account created! You can now login.')
+            return redirect('accounts:login')
     else:
         form = UserRegistrationForm()
     return render(request, 'accounts/register.html', {'form': form})
 
-
 def user_login(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
-            profile = Profile.objects.get(user=user)
+            
+            profile, created = Profile.objects.get_or_create(user=user, defaults={'role': 'customer'})
+            
             if profile.role == 'driver':
                 return redirect('fleet:dashboard')
-            else:
-                return redirect('fleet:customer-dashboard')
+            return redirect('fleet:customer-dashboard')
         else:
-            messages.error(request, 'Invalid username or password')
+            messages.error(request, 'Invalid username or password.')
+            return redirect('accounts:login')
 
     return render(request, 'accounts/login.html')
 
-
 def user_logout(request):
     logout(request)
-    return redirect('login')
+    messages.info(request, "You have been logged out.")
+    return redirect('accounts:login')
 
 
 @login_required
