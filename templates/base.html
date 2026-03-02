@@ -308,6 +308,17 @@
         .alert-info { background: rgba(59,130,246,0.08); border-color: #3b82f6; color: #3b82f6; }
 
         /* RESPONSIVE */
+        /* global grid for pages that use the dashboard layout */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 48px;
+        }
+        @media (max-width: 900px) {
+            .dashboard-layout { grid-template-columns: 1fr; }
+        }
+
+        /* base sidebar / layout adjustments for narrow screens */
         @media (max-width: 968px) {
             .mobile-toggle { display: flex; }
             .sidebar { transform: translateX(-100%); }
@@ -317,7 +328,75 @@
             .dashboard-header { padding: 16px 20px 16px 70px; }
             .header-title { font-size: 22px; }
             .header-divider, .header-breadcrumb { display: none; }
+            /* backdrop appears behind sidebar */
+            .sidebar-backdrop {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.4);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s;
+                z-index: 90;
+            }
+            .sidebar.active + .sidebar-backdrop,
+            .sidebar-backdrop.active {
+                opacity: 1;
+                visibility: visible;
+            }
         }
+        /* further shrink adjustments for phones */
+        @media (max-width: 640px) {
+            body { padding: 20px 10px; }
+            .sidebar { width: 100%; max-width: 320px; }
+            .dashboard-header { padding: 12px 16px 12px 60px; }
+            .header-title { font-size: 20px; }
+            .content-wrapper { padding: 16px 12px; }
+            .sidebar-menu a { font-size: 14px; }
+        }
+
+        /* broad mobile overrides for common components */
+        @media (max-width: 768px) {
+            /* grid stacks */
+            .profile-grid, .form-grid, .fleet-grid, .stats-row, .assignment-wrap, .date-grid {
+                grid-template-columns: 1fr !important;
+            }
+            /* booking cards adapt to vertical */
+            .booking-card {
+                flex-direction: column !important;
+                height: auto !important;
+            }
+            .car-hero {
+                width: 100% !important;
+                height: 180px !important;
+            }
+            .card-actions-sidebar {
+                width: 100% !important;
+                border-left: none !important;
+                border-top: 1px solid var(--border) !important;
+                text-align: left !important;
+                padding: 20px !important;
+            }
+            .dashboard-wrapper { padding: 20px !important; }
+            .page-header { padding: 80px 20px 40px !important; }
+            nav, .filters-wrap { flex-direction: column !important; gap: 20px !important; }
+            .nav, .nav-links { padding: 16px 20px !important; }
+            .fleet-header h2 { font-size: clamp(40px,6vw,60px) !important; }
+            /* simple column helpers (bootstrap-ish) */
+            .row { display: flex; flex-wrap: wrap; margin-right: -15px; margin-left: -15px; }
+            [class*="col-"] { padding-right: 15px; padding-left: 15px; }
+            .col-md-6 { flex: 0 0 100%; max-width: 100% !important; }
+            /* profile page wrappers */
+            .profile-wrap, .update-wrap { padding: 0 20px; }
+        }
+        @media (min-width: 768px) {
+            .col-md-6 { flex: 0 0 50%; max-width: 50% !important; }
+        }
+        /* helper rules that apply at all sizes */
+        img, iframe, video { max-width: 100%; height: auto; }
+        table { width: 100%; display: block; overflow-x: auto; }
+        .form-group { width: 100%; }
+        .btn-submit, .btn { width: 100%; max-width: 360px; }
+        
 
         {% block extra_css %}{% endblock %}
     </style>
@@ -471,16 +550,26 @@
 
     const mobileToggle = document.getElementById('mobileToggle');
     const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
 
     if (mobileToggle && sidebar) {
         mobileToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
+            if (backdrop) backdrop.classList.toggle('active');
         });
+
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                backdrop.classList.remove('active');
+            });
+        }
 
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 968) {
                 if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
                     sidebar.classList.remove('active');
+                    if (backdrop) backdrop.classList.remove('active');
                 }
             }
         });

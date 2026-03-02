@@ -859,6 +859,58 @@
             transition: opacity 0.7s ease, transform 0.7s ease;
         }
         .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            /* reduce padding for large tablets */
+            nav { padding: 16px 40px; }
+            .page-header { padding: 100px 40px 60px; }
+        }
+        /* mobile toggle and nav helper */
+        .mobile-toggle {
+            display: none;
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            z-index: 110;
+            cursor: none;
+        }
+        .nav-links.active {
+            display: flex !important;
+            flex-direction: column;
+            background: var(--card);
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            nav { flex-direction: column; align-items: flex-start; padding: 16px 20px; }
+            .nav-links { display: none; }
+            .nav-cta { margin-top: 12px; }
+            .page-header { padding: 80px 20px 40px; }
+            section { padding: 60px 20px; }
+            .fleet-grid { grid-template-columns: 1fr; }
+            .feature-row, .how-row { flex-direction: column; }
+            .testimonials-grid { grid-template-columns: 1fr; }
+            .footer-top { grid-template-columns: 1fr !important; }
+            .footer-bottom { flex-direction: column; gap: 20px; }
+            img, video { max-width: 100%; height: auto; }
+        }
+        @media (max-width: 640px) {
+            .page-title { font-size: clamp(40px, 8vw, 60px); }
+            .page-subtitle { font-size: 14px; }
+            .chart-wrap, .stats-wrap { flex-direction: column; }
+            section { padding: 40px 15px; }
+        }
     </style>
 </head>
 <body>
@@ -868,6 +920,13 @@
 
 <!-- NAV -->
 <nav id="navbar">
+    <button class="mobile-toggle" id="mobileToggle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
     <a href="#" class="nav-logo">Drive<span>Fleet</span></a>
     <div class="nav-links">
         <a href="#fleet">Fleet</a>
@@ -1329,6 +1388,22 @@
     document.getElementById('vehicleModal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
+
+    // mobile nav toggle
+    const mobileToggle = document.getElementById('mobileToggle');
+    const navLinks = document.querySelector('.nav-links');
+    if (mobileToggle && navLinks) {
+        mobileToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+        document.addEventListener('click', e => {
+            if (window.innerWidth <= 768) {
+                if (!navLinks.contains(e.target) && !mobileToggle.contains(e.target)) {
+                    navLinks.classList.remove('active');
+                }
+            }
+        });
+    }
 
     // Close on Escape key
     document.addEventListener('keydown', function(e) {
